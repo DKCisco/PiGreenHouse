@@ -69,6 +69,7 @@ try:
         engine.runAndWait()
         # Where the timer is compared to the light needed in seconds
         if light_timer <= needed_light_time:
+            print(light_timer)
             GPIO.output(13, GPIO.LOW)
         else:
             GPIO.output(13, GPIO.HIGH)
