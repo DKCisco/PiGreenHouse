@@ -1,6 +1,5 @@
 """
-Version 2.1 adds 3 more soil moisture sensor
-and a 2nd IOT relay
+Version 2.1 adds 3 more soil moisture sensor, a 2nd IOT relay, and a 3rd pump
 
 """
 
@@ -34,27 +33,24 @@ needed_light_time = 43200
 GPIO.setmode(GPIO.BCM)
 GPIO.cleanup()
 
-# Relay 1
+# Relay 1 - Pump 1
 GPIO.setup(5, GPIO.OUT)
 
-# Relay 2
+# Relay 2 - Pump 2
 GPIO.setup(6, GPIO.OUT)
 
-# Power Strip Relay IOT_Realy_1
+# Relay 3 - Pump 3
+GPIO.setup(20, GPIO.OUT)
+
+# Power Strip Relay IOT_Realy_1 - Light 1
 GPIO.setup(13, GPIO.OUT)
 
-# Power Strip Relay IOT_Realy_2
+# Power Strip Relay IOT_Realy_2 - Light 2
 GPIO.setup(19, GPIO.OUT)
-
-# Turning the light connect to IOT_Realy_1 on & the pump power source off (should be the default at startup)
-GPIO.output(13, GPIO.LOW)
-
-# Turning the 2nd light connect to IOT_Realy_2 on
-GPIO.output(19, GPIO.LOW)
 
 # Text to speech bot
 engine = pyttsx3.init()
-engine.say("DigitalSpiffy.com GreenHouse Automation version 9 is beginning")
+engine.say("DigitalSpiffy.com GreenHouse Automation version 2.1 is beginning")
 engine.runAndWait()
 
 # Soil moisture sensore setup
@@ -126,7 +122,7 @@ try:
             print('The moisture level is for sensor 1 is: ' + str(touch_sensor_1))
             engine.say("The tempature is for sensor 1 is " + format_farhenheit_1 + " degrees farhenheit")
             print("Temperature: " + format_farhenheit_1 + " degrees farhenheit")
-            engine.runAndWait()
+            
 
             # Printing and Bot saying temp and moisture level for sensor 2
             engine.say("Checking sensor 2 for moisture level")
@@ -134,18 +130,35 @@ try:
             print('The moisture level is for sensor 2 is: ' + str(touch_sensor_2))
             engine.say("The tempature is for sensor 2 is " + format_farhenheit_2 + " degrees farhenheit")
             print("Temperature: " + format_farhenheit_2 + " degrees farhenheit")
-            engine.runAndWait()
+            
+
+            # Printing and Bot saying temp and moisture level for sensor 3
+            engine.say("Checking sensor 3 for moisture level")
+            engine.say("The moisture level for sensor 3 is " + str(touch_sensor_3))
+            print('The moisture level is for sensor 3 is: ' + str(touch_sensor_3))
+            engine.say("The tempature is for sensor 3 is " + format_farhenheit_3 + " degrees farhenheit")
+            print("Temperature: " + format_farhenheit_3 + " degrees farhenheit")
+            
+
+            # Printing and Bot saying temp and moisture level for sensor 3
+            engine.say("Checking sensor 4 for moisture level")
+            engine.say("The moisture level for sensor 4 is " + str(touch_sensor_4))
+            print('The moisture level is for sensor 4 is: ' + str(touch_sensor_4))
+            engine.say("The tempature is for sensor 4 is " + format_farhenheit_4 + " degrees farhenheit")
+            print("Temperature: " + format_farhenheit_4 + " degrees farhenheit")
+            
 
             # Setup for SendGrid API email
             message = Mail(
             from_email='dillan.craig@digitalspiffy.com',
             to_emails='dillan.k.craig@gmail.com',
-            subject='Pump 1 has been activated @ ' + current_time,
+            subject='Pump has been activated @ ' + current_time,
             html_content='<strong>Photo taken on ' + current_date + ' at ' + current_time + '</strong>')
-            time.sleep(60) # How often you check the moisture sensor (this needs to change to if else for prod)
+
+            # Boolean for sensor 1 i2c addr. 36
             if touch_sensor_1 < 750:
                 # Bot says action
-                engine.say("The plants need water. Pump 1 is on")
+                engine.say("Sensor 1 plants need water. Pump 1 is on")
                 engine.runAndWait()
                 # Turn on pump power source
                 GPIO.output(13, GPIO.HIGH)
@@ -187,7 +200,92 @@ try:
                     message.attachment = attachment
                 time.sleep(1)
                 response = sg.send(message)
-                # Will add another sensor here
+            # Boolean for sensor 2 i2c addr. 37
+            if touch_sensor_2 < 750:
+                # Bot says action
+                engine.say("Sensor 2 plants need water. Pump 2 is on")
+                engine.runAndWait()
+                # Turn on pump power source
+                GPIO.output(13, GPIO.HIGH)
+                # Turn on pump 2
+                GPIO.output(6, GPIO.HIGH)
+                print('Pump 2 ON')
+                # Capture photo and video
+                camera.capture('pump2.jpg')
+                camera.start_recording('pump2.h264')
+                # Wait while pump is on and recording video
+                time.sleep(7)
+                # Turn off pump 2
+                GPIO.output(6, GPIO.LOW)
+                # Turn off pump power source & light 1 back on
+                GPIO.output(13, GPIO.LOW)
+                # Bot says action
+                engine.say("Pump 2 is off")
+                engine.runAndWait()
+                print('IOT_Realy_1 is OFF')
+                camera.stop_recording()
+                time.sleep(1)
+                # Current date & time variables for filenames used in photos/vids
+                current_date = time.strftime("%m:%d:%Y")
+                current_time = time.strftime("%H:%M:%S")
+                # Email attachment of photo taken
+                file_path = 'pump2.jpg'
+                with open(file_path, 'rb') as f:
+                    data = f.read()
+                    f.close()
+                    encoded = base64.b64encode(data).decode()
+                    attachment = Attachment()
+                    attachment.file_content = FileContent(encoded)
+                    attachment.file_type = FileType('application/jpg')
+                    attachment.file_name = FileName('pump2.jpg')
+                    attachment.disposition = Disposition('attachment')
+                    attachment.content_id = ContentId('Example Content ID')
+                    message.attachment = attachment
+                time.sleep(1)
+                response = sg.send(message)
+            # Boolean for sensor 3 i2c addr. 38
+            if touch_sensor_3 < 750:
+                # Bot says action
+                engine.say("Sensor 3 plants need water. Pump 3 is on")
+                engine.runAndWait()
+                # Turn on pump power source
+                GPIO.output(13, GPIO.HIGH)
+                # Turn on pump 3
+                GPIO.output(20, GPIO.HIGH)
+                print('Pump 3 ON')
+                # Capture photo and video
+                camera.capture('pump3.jpg')
+                camera.start_recording('pump3.h264')
+                # Wait while pump is on and recording video
+                time.sleep(7)
+                # Turn off pump 3
+                GPIO.output(20, GPIO.LOW)
+                # Turn off pump power source & light 1 back on
+                GPIO.output(13, GPIO.LOW)
+                # Bot says action
+                engine.say("Pump 3 is off")
+                engine.runAndWait()
+                print('IOT_Realy_1 is OFF')
+                camera.stop_recording()
+                time.sleep(1)
+                # Current date & time variables for filenames used in photos/vids
+                current_date = time.strftime("%m:%d:%Y")
+                current_time = time.strftime("%H:%M:%S")
+                # Email attachment of photo taken
+                file_path = 'pump3.jpg'
+                with open(file_path, 'rb') as f:
+                    data = f.read()
+                    f.close()
+                    encoded = base64.b64encode(data).decode()
+                    attachment = Attachment()
+                    attachment.file_content = FileContent(encoded)
+                    attachment.file_type = FileType('application/jpg')
+                    attachment.file_name = FileName('pump2.jpg')
+                    attachment.disposition = Disposition('attachment')
+                    attachment.content_id = ContentId('Example Content ID')
+                    message.attachment = attachment
+                time.sleep(1)
+                response = sg.send(message)
                 # Turn on pump power supply & turn light off
                 GPIO.output(13, GPIO.HIGH)
                 # Turn on pump 2
@@ -202,33 +300,52 @@ try:
                 print('Pump 2 OFF')
                 engine.say("Pump 2 is off")
                 engine.runAndWait()
-                time.sleep(1)
-                sg = SendGridAPIClient(SENDGRID_API_KEY)
-                # time.sleep(43200) # 12 hours
-                time.sleep(10)
         else:
+            # Turn light off
             GPIO.output(13, GPIO.HIGH)
+            GPIO.output(19, GPIO.HIGH)
             light_off_time = datetime.datetime.utcnow()
-            engine.say("The light is off!")
+            engine.say("The lights are off!")
             engine.runAndWait()
             time_needed_until_light_on = 43200
             # Current date & time variables for filenames used in photos/vids
             current_date = time.strftime("%m:%d:%Y")
             current_time = time.strftime("%H:%M:%S")
-            # Read moisture level through capacitive touch pad
-            touch = ss.moisture_read()
-            # Read temperature from the temperature sensor
-            temp = ss.get_temp()
             # Convert Celsius to Farenheit
-            celsius_1 = float(temp)
+            celsius_1 = float(temp_sensor_1)
             fahrenheit_1 = float((celsius_1 * 1.8) + 32  )
             format_farhenheit_1 = "{:.2f}".format(float(fahrenheit_1))
-            # Printing and Bot saying temp and moisture level
-            engine.say("Checking the sensor for moisture level")
-            engine.say("The moisture level is " + str(touch))
-            print('The moisture level is: ' + str(touch))
-            engine.say("The tempature is " + format_farhenheit_1 + " degrees farhenheit")
+
+            # Printing and Bot saying temp and moisture level for sensor 1
+            engine.say("Checking the sensor 1 for moisture level")
+            engine.say("The moisture level is " + str(touch_sensor_1))
+            print('The moisture level is for sensor 1 is: ' + str(touch_sensor_1))
+            engine.say("The tempature is for sensor 1 is " + format_farhenheit_1 + " degrees farhenheit")
             print("Temperature: " + format_farhenheit_1 + " degrees farhenheit")
+            engine.runAndWait()
+
+            # Printing and Bot saying temp and moisture level for sensor 2
+            engine.say("Checking sensor 2 for moisture level")
+            engine.say("The moisture level for sensor 2 is " + str(touch_sensor_2))
+            print('The moisture level is for sensor 2 is: ' + str(touch_sensor_2))
+            engine.say("The tempature is for sensor 2 is " + format_farhenheit_2 + " degrees farhenheit")
+            print("Temperature: " + format_farhenheit_2 + " degrees farhenheit")
+            engine.runAndWait()
+
+            # Printing and Bot saying temp and moisture level for sensor 3
+            engine.say("Checking sensor 3 for moisture level")
+            engine.say("The moisture level for sensor 3 is " + str(touch_sensor_3))
+            print('The moisture level is for sensor 3 is: ' + str(touch_sensor_3))
+            engine.say("The tempature is for sensor 3 is " + format_farhenheit_3 + " degrees farhenheit")
+            print("Temperature: " + format_farhenheit_3 + " degrees farhenheit")
+            engine.runAndWait()
+
+            # Printing and Bot saying temp and moisture level for sensor 3
+            engine.say("Checking sensor 4 for moisture level")
+            engine.say("The moisture level for sensor 4 is " + str(touch_sensor_4))
+            print('The moisture level is for sensor 4 is: ' + str(touch_sensor_4))
+            engine.say("The tempature is for sensor 4 is " + format_farhenheit_4 + " degrees farhenheit")
+            print("Temperature: " + format_farhenheit_4 + " degrees farhenheit")
             engine.runAndWait()
             # Setup for SendGrid API email
             message = Mail(
@@ -242,14 +359,18 @@ try:
             print(light_off_time)
             print(light_on_time)
             print(light_timer_2)
+
+            # Boolean for light time while light is off
             if light_timer_2 >= time_needed_until_light_on:
                 # Run a new iteration of the current script, providing any command line args from the current iteration.
                 camera.close()
                 GPIO.cleanup() 
                 os.execv(sys.executable, ['python'] + sys.argv)
-            if touch < 750:
+
+            # Boolean for sensor 1 i2c addr. 36
+            if touch_sensor_1 < 750:
                 # Bot says action
-                engine.say("The plants need water. Pump 1 is on")
+                engine.say("Sensor 1 plants need water. Pump 1 is on")
                 engine.runAndWait()
                 # Turn on pump power source
                 GPIO.output(13, GPIO.HIGH)
@@ -291,12 +412,98 @@ try:
                     message.attachment = attachment
                 time.sleep(1)
                 response = sg.send(message)
+            # Boolean for sensor 2 i2c addr. 37
+            if touch_sensor_2 < 750:
+                # Bot says action
+                engine.say("Sensor 2 plants need water. Pump 2 is on")
+                engine.runAndWait()
+                # Turn on pump power source
+                GPIO.output(13, GPIO.HIGH)
+                # Turn on pump 2
+                GPIO.output(6, GPIO.HIGH)
+                print('Pump 2 ON')
+                # Capture photo and video
+                camera.capture('pump2.jpg')
+                camera.start_recording('pump2.h264')
+                # Wait while pump is on and recording video
+                time.sleep(7)
+                # Turn off pump 2
+                GPIO.output(6, GPIO.LOW)
+                # Turn off pump power source & light 1 back on
+                GPIO.output(13, GPIO.LOW)
+                # Bot says action
+                engine.say("Pump 2 is off")
+                engine.runAndWait()
+                print('IOT_Realy_1 is OFF')
+                camera.stop_recording()
+                time.sleep(1)
+                # Current date & time variables for filenames used in photos/vids
+                current_date = time.strftime("%m:%d:%Y")
+                current_time = time.strftime("%H:%M:%S")
+                # Email attachment of photo taken
+                file_path = 'pump2.jpg'
+                with open(file_path, 'rb') as f:
+                    data = f.read()
+                    f.close()
+                    encoded = base64.b64encode(data).decode()
+                    attachment = Attachment()
+                    attachment.file_content = FileContent(encoded)
+                    attachment.file_type = FileType('application/jpg')
+                    attachment.file_name = FileName('pump2.jpg')
+                    attachment.disposition = Disposition('attachment')
+                    attachment.content_id = ContentId('Example Content ID')
+                    message.attachment = attachment
+                time.sleep(1)
+                response = sg.send(message)
+            # Boolean for sensor 3 i2c addr. 38
+            if touch_sensor_3 < 750:
+                # Bot says action
+                engine.say("Sensor 3 plants need water. Pump 3 is on")
+                engine.runAndWait()
+                # Turn on pump power source
+                GPIO.output(13, GPIO.HIGH)
+                # Turn on pump 3
+                GPIO.output(20, GPIO.HIGH)
+                print('Pump 3 ON')
+                # Capture photo and video
+                camera.capture('pump3.jpg')
+                camera.start_recording('pump3.h264')
+                # Wait while pump is on and recording video
+                time.sleep(7)
+                # Turn off pump 3
+                GPIO.output(20, GPIO.LOW)
+                # Turn off pump power source & light 1 back on
+                GPIO.output(13, GPIO.LOW)
+                # Bot says action
+                engine.say("Pump 3 is off")
+                engine.runAndWait()
+                print('IOT_Realy_1 is OFF')
+                camera.stop_recording()
+                time.sleep(1)
+                # Current date & time variables for filenames used in photos/vids
+                current_date = time.strftime("%m:%d:%Y")
+                current_time = time.strftime("%H:%M:%S")
+                # Email attachment of photo taken
+                file_path = 'pump3.jpg'
+                with open(file_path, 'rb') as f:
+                    data = f.read()
+                    f.close()
+                    encoded = base64.b64encode(data).decode()
+                    attachment = Attachment()
+                    attachment.file_content = FileContent(encoded)
+                    attachment.file_type = FileType('application/jpg')
+                    attachment.file_name = FileName('pump2.jpg')
+                    attachment.disposition = Disposition('attachment')
+                    attachment.content_id = ContentId('Example Content ID')
+                    message.attachment = attachment
+                time.sleep(1)
+                response = sg.send(message)
                 # Turn on pump power supply & turn light off
                 GPIO.output(13, GPIO.HIGH)
                 # Turn on pump 2
                 GPIO.output(6, GPIO.HIGH)
                 print('Pump 2 ON')
-                engine.say("The plants needs water. Pump 2 is on")
+                engine.say("The plants need water. Pump 2 is on")
                 engine.runAndWait()
                 time.sleep(5)
                 GPIO.output(6, GPIO.LOW)
@@ -305,9 +512,6 @@ try:
                 print('Pump 2 OFF')
                 engine.say("Pump 2 is off")
                 engine.runAndWait()
-                time.sleep(1)
-                sg = SendGridAPIClient(SENDGRID_API_KEY)
-                time.sleep(10)
 
 finally:
     print('error')
