@@ -23,7 +23,7 @@ initial = time.monotonic()
 
 # Variables for light timer
 light_on_time = datetime.datetime.utcnow()
-needed_light_time = 43200
+needed_light_time = 43200 # 12 hours in seconds
 
 # Pi4 GPIO setup
 GPIO.setmode(GPIO.BCM)
@@ -46,6 +46,9 @@ engine = pyttsx3.init()
 engine.say("DigitalSpiffy.com GreenHouse Automation version 1.9 is beginning")
 engine.runAndWait()
 print("DigitalSpiffy.com GreenHouse Automation version 1.9 is beginning")
+
+# Sleep setup for light timer to be accurate
+time.sleep(120)
 
 # Soil moisture sensore setup
 i2c_bus = board.I2C()
@@ -72,14 +75,15 @@ try:
         # Timer for light & amount of time needed for light to be on
         light_current_time = datetime.datetime.utcnow()
         light_timer = ((light_current_time - light_on_time).total_seconds())
+        minutes_timer = (int(light_timer//60))
         # Formatting light timer for print and bot speech
-        format_timer_1 = "{:.2f}".format(float(light_timer))
+        format_timer_1 = "{:.2f}".format(float(minutes_timer))
         # Where the timer is compared to the light needed in seconds
         if light_timer <= needed_light_time:
             # Bot states how long the light has been on for
-            engine.say("The light has been on for " + format_timer_1 + "seconds")
+            engine.say("The light has been on for " + format_timer_1 + "minutes")
             engine.runAndWait()
-            print("The light has been on for " + format_timer_1 + " seconds")
+            print("The light has been on for " + format_timer_1 + " minutes")
             GPIO.output(13, GPIO.LOW)
             # Current date & time variables for filenames used in photos/vids
             current_date = time.strftime("%m:%d:%Y")
@@ -113,7 +117,7 @@ try:
             subject='Pump 1 has been activated @ ' + current_time,
             html_content='<strong>Photo taken on ' + current_date + ' at ' + current_time + '</strong>')
             # Boolean for moisture sensor
-            if sensor_2.moisture_read() < 1015:
+            if sensor_2.moisture_read() < 950:
                 # Bot says action
                 engine.say("The plants need water. Pump 1 is on")
                 engine.runAndWait()
@@ -122,10 +126,8 @@ try:
                 # Turn on the pump
                 GPIO.output(5, GPIO.HIGH)
                 print('Pump 1 ON')
-                # Capture photo and video
+                # Capture photo
                 camera.capture('pump1.jpg')
-                # Wait while pump is on and recording video
-                time.sleep(15)
                 # Turn off pump 1
                 GPIO.output(5, GPIO.LOW)
                 # Turn off pump power source & light back on
@@ -156,7 +158,7 @@ try:
                 time.sleep(1)
                 response = sg.send(message)
                 # Will add another sensor here
-            if sensor_4.moisture_read() < 1015:
+            if sensor_4.moisture_read() < 950:
                 # Bot says action
                 engine.say("The plants need water. Pump 2 is on")
                 engine.runAndWait()
@@ -165,7 +167,7 @@ try:
                 # Turn on pump 2
                 GPIO.output(6, GPIO.HIGH)
                 print('Pump 2 ON')
-                time.sleep(5)
+                time.sleep(25)
                 GPIO.output(6, GPIO.LOW)
                 # Turn off pump power supply & turn light on
                 GPIO.output(13, GPIO.LOW)
@@ -176,10 +178,12 @@ try:
                 # Current date & time variables for filenames used in photos/vids
                 current_date = time.strftime("%m:%d:%Y")
                 current_time = time.strftime("%H:%M:%S")
+                # Capture photo
+                camera.capture('pump2.jpg')
                 # SendGrid API Call
                 sg = SendGridAPIClient(SENDGRID_API_KEY)
                 # Email attachment of photo taken
-                file_path = 'pump1.jpg'
+                file_path = 'pump2.jpg'
                 with open(file_path, 'rb') as f:
                     data = f.read()
                     f.close()
@@ -187,13 +191,13 @@ try:
                     attachment = Attachment()
                     attachment.file_content = FileContent(encoded)
                     attachment.file_type = FileType('application/jpg')
-                    attachment.file_name = FileName('pump1.jpg')
+                    attachment.file_name = FileName('pump2.jpg')
                     attachment.disposition = Disposition('attachment')
                     attachment.content_id = ContentId('Example Content ID')
                     message.attachment = attachment
                     response = sg.send(message)
             sg = SendGridAPIClient(SENDGRID_API_KEY)
-            # How often you check the moisture sensor (this needs to change to if else for prod)
+            # How often you check the moisture sensor
             time.sleep(3600)   
         else:
             GPIO.output(13, GPIO.HIGH)
