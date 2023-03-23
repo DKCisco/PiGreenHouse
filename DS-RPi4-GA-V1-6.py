@@ -28,15 +28,16 @@ i2c_bus = board.I2C()
 ss = Seesaw(i2c_bus, addr=0x36)
 
 GPIO.setmode(GPIO.BCM)
+GPIO.cleanup()
 
 camera = picamera.PiCamera()
 camera.rotation = 180
 
 # Relay 1
-GPIO.setup(5, GPIO.OUT)
+GPIO.setup(6, GPIO.OUT)
 
 # Relay 2
-GPIO.setup(6, GPIO.OUT)
+GPIO.setup(13, GPIO.OUT)
 
 try:
     while True:
@@ -48,6 +49,7 @@ try:
         # Read temperature from the temperature sensor
         temp = ss.get_temp()
         print("temp: " + str(temp) + "  moisture: " + str(touch))
+        print("Temperature: {}".format(temp))
         # Setup for SendGrid API email
         message = Mail(
         from_email='dillan.craig@digitalspiffy.com',
@@ -57,14 +59,14 @@ try:
         time.sleep(5)
         if touch < 860:
             # Turn on the pump
-            GPIO.output(5, GPIO.HIGH)
+            GPIO.output(6, GPIO.HIGH)
             print('Relay 1 ON')
             engine.say("Pump 1 is on")
             engine.runAndWait()
             camera.capture('pump1.jpg')
             camera.start_recording('pump1.h264')
             time.sleep(3)
-            GPIO.output(5, GPIO.LOW)
+            GPIO.output(6, GPIO.LOW)
             engine.say("Pump 1 is off")
             engine.runAndWait()
             print('Relay 1 OFF')
@@ -90,12 +92,12 @@ try:
                 message.attachment = attachment
             time.sleep(2)
             response = sg.send(message)
-            GPIO.output(6, GPIO.HIGH)
+            GPIO.output(13, GPIO.HIGH)
             print('Relay 2 ON')
             engine.say("Pump 2 is on")
             engine.runAndWait()
             time.sleep(1)
-            GPIO.output(6, GPIO.LOW)
+            GPIO.output(13, GPIO.LOW)
             print('Relay 2 OFF')
             engine.say("Pump 2 is off")
             engine.runAndWait()
