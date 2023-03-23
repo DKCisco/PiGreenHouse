@@ -18,6 +18,8 @@ from send_grid_api import SENDGRID_API_KEY
 import pyttsx3
 import datetime
 
+#Current version modified 3/23/23
+
 # Initialize time variable
 initial = time.monotonic()
 
