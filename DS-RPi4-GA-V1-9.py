@@ -205,6 +205,7 @@ try:
             GPIO.output(13, GPIO.HIGH)
             engine.say("The light has been turned off.")
             engine.runAndWait()
+            print("The light has been turned off at " + current_time + "on " + current_date)
             # How long the light will be off
             time.sleep(43200)
             # Run a new iteration of the current script, providing any command line args from the current iteration.
