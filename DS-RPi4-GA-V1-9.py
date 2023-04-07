@@ -77,6 +77,7 @@ try:
         # Timer for light & amount of time needed for light to be on
         light_current_time = datetime.datetime.utcnow()
         light_timer = ((light_current_time - light_on_time).total_seconds())
+        # Converting to minutes
         minutes_timer = (int(light_timer//60))
         # Formatting light timer for print and bot speech
         format_timer_1 = "{:.2f}".format(float(minutes_timer))
@@ -86,6 +87,7 @@ try:
             engine.say("The light has been on for " + format_timer_1 + "minutes")
             engine.runAndWait()
             print("The light has been on for " + format_timer_1 + " minutes")
+            # Turn light on
             GPIO.output(13, GPIO.LOW)
             # Current date & time variables for filenames used in photos/vids
             current_date = time.strftime("%m:%d:%Y")
