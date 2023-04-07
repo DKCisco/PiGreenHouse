@@ -61,7 +61,7 @@ sensor_4 = Seesaw(i2c_bus, addr=0x39)
 
 # PiCamera setup
 camera = picamera.PiCamera()
-camera.rotation = 180
+camera.rotation = 90
 
 # Convert Celsius to Farenheit, adjusted -2 for chip temp
 celsius_2 = float(sensor_2.get_temp())
