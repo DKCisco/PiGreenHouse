@@ -204,15 +204,19 @@ try:
             # How often you check the moisture sensor
             time.sleep(3600)   
         else:
+            # Turn light off
             GPIO.output(13, GPIO.HIGH)
-            engine.say("The light has been turned off.")
+            # Bot states how long the light has been on for
+            engine.say("The light has been on for " + format_timer_1 + "minutes. The light will now turn off.")
             engine.runAndWait()
+            print("The light has been on for " + format_timer_1 + " minutes")
             print("The light has been turned off at " + current_time + "on " + current_date)
             # How long the light will be off
             time.sleep(43200)
-            # Run a new iteration of the current script, providing any command line args from the current iteration.
+            # Close camera and cleanup GPIO before program restarts
             camera.close()
-            GPIO.cleanup() 
+            GPIO.cleanup()
+            # Run a new iteration of the current script, providing any command line args from the current iteration.
             os.execv(sys.executable, ['python'] + sys.argv)
 
 finally:
